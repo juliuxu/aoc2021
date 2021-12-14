@@ -14,6 +14,7 @@ const parseInput = (rawInput: string): Input => {
   return [parts[0], rules];
 };
 
+// Brute-force it
 const part1 = (rawInput: string, nSteps = 10) => {
   const [polymerTemplate, rules] = parseInput(rawInput);
 
@@ -44,10 +45,75 @@ const part1 = (rawInput: string, nSteps = 10) => {
 };
 
 // n=40 is just to much to brute-force
+// Observation:
+// A growth does not interact with any other, it's encapuslated inside it's pair
+// The order of the pairs does not matter, only that they exist
+// When a pair grows, it also disapears
+// Each character in the pair count appears twice, except for start and end
+//
+// We calculate what pairs a pair grows
+// Then we just keep count of the pairs
 const part2 = (rawInput: string) => {
   const [polymerTemplate, rules] = parseInput(rawInput);
 
-  return 0;
+  // Generate a mapping of which pairs a pair grows
+  const pairToPairs = Object.entries(rules).reduce((acc, [key, value]) => {
+    const result = key.split("").join(value);
+    const pairs = [result.slice(0, 2), result.slice(1, 3)];
+    acc[key] = pairs;
+    return acc;
+  }, {} as Record<string, string[]>);
+
+  // Build initial pairs
+  const polymerTemplatePairs = [];
+  for (let i = 1; i < polymerTemplate.length; i += 1) {
+    polymerTemplatePairs.push(polymerTemplate.slice(i - 1, i + 1));
+  }
+
+  // Build initial pair count
+  const blankPairCount = () =>
+    Object.keys(rules).reduce((acc, pair) => {
+      acc[pair] = 0;
+      return acc;
+    }, {} as Record<string, number>);
+  const initialPairCount = blankPairCount();
+  polymerTemplatePairs.forEach((pair) => (initialPairCount[pair] += 1));
+
+  const step = (pairCount: Record<string, number>) => {
+    const newPairCount = blankPairCount();
+    for (let x of Object.keys(pairToPairs)) {
+      const multiplier = pairCount[x];
+      pairToPairs[x].forEach((pair) => {
+        newPairCount[pair] += multiplier;
+      });
+    }
+    return newPairCount;
+  };
+
+  const afterNSteps: Record<string, number> = Array(40)
+    .fill(0)
+    .reduce((acc) => step(acc), initialPairCount);
+
+  const counts = Object.entries(afterNSteps).reduce((acc, [pair, count]) => {
+    pair.split("").forEach((c) => {
+      if (acc[c] === undefined) acc[c] = count;
+      else acc[c] += count;
+    });
+    return acc;
+  }, {} as Record<string, number>);
+
+  const countsRemovedDuplicates = Object.entries(counts).reduce(
+    (acc, [key, value]) => {
+      acc[key] = Math.ceil(value / 2);
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  const sortedCountValues = Object.values(countsRemovedDuplicates).sort(
+    (a, b) => a - b,
+  );
+  return sortedCountValues[sortedCountValues.length - 1] - sortedCountValues[0];
 };
 
 const testInput = `NNCB
@@ -75,7 +141,10 @@ run({
     solution: part1,
   },
   part2: {
-    tests: [{ input: testInput, expected: 2188189693529 }],
+    tests: [
+      // { input: testInput, expected: 1588 },
+      { input: testInput, expected: 2188189693529 },
+    ],
     solution: part2,
   },
   trimTestInputs: true,
