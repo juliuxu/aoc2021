@@ -178,16 +178,18 @@
     },
     {
       "part1": {
-        "solved": false,
-        "result": null,
-        "attempts": [],
-        "time": null
+        "solved": true,
+        "result": "755",
+        "attempts": [
+          "887"
+        ],
+        "time": 0.55
       },
       "part2": {
-        "solved": false,
-        "result": null,
+        "solved": true,
+        "result": "BLKJRBAG",
         "attempts": [],
-        "time": null
+        "time": 2.58
       }
     },
     {
