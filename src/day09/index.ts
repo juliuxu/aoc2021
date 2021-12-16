@@ -1,5 +1,5 @@
 import run from "aocrunner";
-import { multiply, sum } from "../utils/index.js";
+import { product, sum } from "../utils/index.js";
 
 type Pos = [y: number, x: number];
 type Line = number[];
@@ -78,7 +78,7 @@ const part2 = (rawInput: string) => {
     return basinPoints;
   };
 
-  return multiply(
+  return product(
     lowPoints
       .map(getBasinPoints)
       .map((x) => x.length)
